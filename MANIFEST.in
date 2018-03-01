@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include leaderapp *.css
+recursive-include leaderapp *.csv
+recursive-include leaderapp *.html
+recursive-include leaderapp *.ico
+recursive-include leaderapp *.js
+recursive-include leaderapp *.json
+recursive-include leaderapp *.md
+recursive-include leaderapp *.png
+recursive-include leaderapp *.py
+recursive-include leaderapp *.svg
+recursive-include leaderapp *.txt
+recursive-exclude leaderapp *.pyc
