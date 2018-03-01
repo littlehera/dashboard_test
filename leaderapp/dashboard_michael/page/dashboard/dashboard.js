@@ -20,8 +20,8 @@ frappe.Dashboard = Class.extend({
 		this.doctypes = ["Customer", "Sales Order"];
 		this.timespans = ["Week", "Month", "Quarter", "Year"];
 		this.filters = {
-			"Customer": ["total_sales_amount", "total_qty_sold", "outstanding_amount", ],
-			"Sales Order": ["total_purchase_amount", "total_qty_purchased", "outstanding_amount"],
+			"Customer": ["grand_total", "base_grand_total" ],
+			"Sales Order": ["grand_total", "base_grand_total"],
 		};
 
 		// for saving current selected filters
