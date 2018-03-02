@@ -17,10 +17,9 @@ frappe.Dashboard = Class.extend({
 		this.$sidebar_list = this.page.sidebar.find('ul');
 
 		// const list of doctypes
-		this.doctypes = ["Customer", "Sales Order"];
+		this.doctypes = ["Sales Order"];
 		this.timespans = ["Week", "Month", "Quarter", "Year"];
 		this.filters = {
-			"Customer": ["grand_total", "base_grand_total" ],
 			"Sales Order": ["grand_total", "base_grand_total"],
 		};
 
@@ -45,11 +44,14 @@ frappe.Dashboard = Class.extend({
 		var me = this;
 
 		var $container = $(`<div class="dashboard page-main-content">
-			<div class="dashboard-graph"></div>
-			<div class="dashboard-list"></div>
+			<div class="dashboard-graph" style="width: 50%; float: left;"></div>
+			<div class="dashboard-graph2" style="width: 50%; float: right;"></div>
+			<div class="dashboard-graph3" style="width: 100%; float: right;"></div>
 		</div>`).appendTo(this.page.main);
 
 		this.$graph_area = $container.find('.dashboard-graph');
+		this.$graph_area2 = $container.find('.dashboard-graph2');
+		this.$graph_area3 = $container.find('.dashboard-graph3');
 
 		this.doctypes.map(doctype => {
 			this.get_sidebar_item(doctype).appendTo(this.$sidebar_list);
@@ -119,6 +121,8 @@ frappe.Dashboard = Class.extend({
 
 		frappe.model.with_doctype(me.options.selected_doctype, function () {
 			me.get_dashboard(me.get_dashboard_data, $container);
+			me.get_dashboard2(me.get_dashboard_data, $container);
+			me.get_dashboard3(me.get_dashboard_data, $container);
 		});
 	},
 
@@ -156,143 +160,93 @@ frappe.Dashboard = Class.extend({
 					type: 'bar',
 					height: 140
 				};
-				new Chart(args);
+				var chart1 = new Chart(args);
 
 				notify(me, r, $container);
 			}
 		});
 	},
 
-	get_dashboard_data: function (me, res, $container) {
-		if (res && res.message) {
-			me.message = null;
-			$container.find(".dashboard-list").html(me.render_list_view(res.message));
-		} else {
-			me.$graph_area.hide();
-			me.message = "No items found.";
-			$container.find(".dashboard-list").html(me.render_list_view());
+	get_dashboard2: function (notify, $container) {
+		var me = this;
+		if(!me.options.selected_company) {
+			frappe.throw(__("Please select Company"));
 		}
-	},
+		frappe.call({
+			method: "leaderapp.dashboard_michael.page.dashboard.dashboard.get_dashboard2",
+			args: {
+				doctype: me.options.selected_doctype,
+				timespan: me.options.selected_timespan,
+				company: me.options.selected_company,
+				field: me.options.selected_filter_item,
+			},
+			callback: function (r) {
+				let results = r.message || [];
 
-	render_list_view: function (items = []) {
-		var me = this;
+				let graph_items = results.slice(0, 10);
 
-		var html =
-			`${me.render_message()}
-			 <div class="result" style="${me.message ? "display:none;" : ""}">
-			 	${me.render_result(items)}
-			 </div>`;
+				me.$graph_area2.show().empty();
+				let args = {
+					parent: '.dashboard-graph2',
+					data: {
+						datasets: [
+							{
+								values: graph_items.map(d=>d.value)
+							}
+						],
+						labels: graph_items.map(d=>d.name)
+					},
+					colors: ['light-green'],
+					format_tooltip_x: d=>d[me.options.selected_filter_item],
+					type: 'line',
+					height: 140
+				};
+				var chart2 = new Chart(args);
 
-		return $(html);
-	},
-
-	render_result: function (items) {
-		var me = this;
-
-		var html =
-			`${me.render_list_header()}
-			${me.render_list_result(items)}`;
-
-		return html;
-	},
-
-	render_list_header: function () {
-		var me = this;
-		const _selected_filter = me.options.selected_filter
-			.map(i => frappe.model.unscrub(i));
-		const fields = ['name', me.options.selected_filter_item];
-
-		const html =
-			`<div class="list-headers">
-				<div class="list-item list-item--head" data-list-renderer="${"List"}">
-					${
-					fields.map(filter => {
-							const col = frappe.model.unscrub(filter);
-							return (
-								`<div class="dashboard-item list-item_content ellipsis text-muted list-item__content--flex-2
-									header-btn-base
-									${(col && _selected_filter.indexOf(col) !== -1) ? "text-right" : ""}">
-									<span class="list-col-title ellipsis">
-										${col}
-									</span>
-								</div>`);
-						}).join("")
-					}
-				</div>
-			</div>`;
-		return html;
-	},
-
-	render_list_result: function (items) {
-		var me = this;
-
-		let _html = items.map((item, index) => {
-			const $value = $(me.get_item_html(item));
-
-			let item_class = "";
-			if(index == 0) {
-				item_class = "first";
-			} else if (index == 1) {
-				item_class = "second";
-			} else if(index == 2) {
-				item_class = "third";
+				notify(me, r, $container);
 			}
-			const $item_container = $(`<div class="list-item-container  ${item_class}">`).append($value);
-			return $item_container[0].outerHTML;
-		}).join("");
-
-		let html =
-			`<div class="result-list">
-				<div class="list-items">
-					${_html}
-				</div>
-			</div>`;
-
-		return html;
+		});
 	},
 
-	render_message: function () {
+	get_dashboard3: function (notify, $container) {
 		var me = this;
+		if(!me.options.selected_company) {
+			frappe.throw(__("Please select Company"));
+		}
+		frappe.call({
+			method: "leaderapp.dashboard_michael.page.dashboard.dashboard.get_dashboard3",
+			args: {
+				doctype: me.options.selected_doctype,
+				timespan: me.options.selected_timespan,
+				company: me.options.selected_company,
+				field: me.options.selected_filter_item,
+			},
+			callback: function (r) {
+				let results = r.message || [];
 
-		let html =
-			`<div class="no-result text-center" style="${me.message ? "" : "display:none;"}">
-				<div class="msg-box no-border">
-					<p>No Item found</p>
-				</div>
-			</div>`;
+				let graph_items = results.slice(0, 10);
 
-		return html;
-	},
+				me.$graph_area3.show().empty();
+				let args = {
+					parent: '.dashboard-graph3',
+					data: {
+						datasets: [
+							{
+								values: graph_items.map(d=>d.value)
+							}
+						],
+						labels: graph_items.map(d=>d.name)
+					},
+					colors: ['light-green'],
+					format_tooltip_x: d=>d[me.options.selected_filter_item],
+					type: 'line',
+					height: 140
+				};
+				var chart3 = new Chart(args);
 
-	get_item_html: function (item) {
-		var me = this;
-		const company = me.options.selected_company;
-		const currency = frappe.get_doc(":Company", company).default_currency;
-		const fields = ['name','value'];
-
-		const html =
-			`<div class="list-item">
-				${
-			fields.map(col => {
-					let val = item[col];
-					if(col=="name") {
-						var formatted_value = `<a class="grey list-id ellipsis"
-							href="#Form/${me.options.selected_doctype}/${item["name"]}"> ${val} </a>`
-					} else {
-						var formatted_value = `<span class="text-muted ellipsis">
-							${(me.options.selected_filter_item.indexOf('qty') == -1) ? format_currency(val, currency) : val}</span>`
-					}
-
-					return (
-						`<div class="list-item_content ellipsis list-item__content--flex-2
-							${(col == "value") ? "text-right" : ""}">
-							${formatted_value}
-						</div>`);
-					}).join("")
-				}
-			</div>`;
-
-		return html;
+				notify(me, r, $container);
+			}
+		});
 	},
 
 	get_sidebar_item: function(item) {

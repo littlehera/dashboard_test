@@ -17,6 +17,30 @@ def get_dashboard(doctype, timespan, company, field):
 
     return records
 
+@frappe.whitelist()
+def get_dashboard2(doctype, timespan, company, field):
+    """return top 10 items for that doctype based on conditions"""
+    from_date = get_from_date(timespan)
+    records = []
+    if doctype == "Customer":
+        records = get_all_customers(from_date, company, field)
+    elif doctype == "Sales Order":
+        records = get_all_salesorder(from_date, company, field)
+
+    return records
+
+@frappe.whitelist()
+def get_dashboard3(doctype, timespan, company, field):
+    """return top 10 items for that doctype based on conditions"""
+    from_date = get_from_date(timespan)
+    records = []
+    if doctype == "Customer":
+        records = get_all_customers(from_date, company, field)
+    elif doctype == "Sales Order":
+        records = get_all_salesorder(from_date, company, field)
+
+    return records
+
 def get_all_customers(from_date, company, field):
     if field == "grand_total":
         return frappe.db.sql("""
