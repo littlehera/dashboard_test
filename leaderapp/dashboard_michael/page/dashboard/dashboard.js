@@ -44,16 +44,28 @@ frappe.Dashboard = Class.extend({
 		var me = this;
 
 		var $container = $(`<div class="dashboard page-main-content">
-		    <h6><p style="width: 70%; text-align: center; font-size: 15px; float: left;">Sales Every Day</p>
-		    <p style="width: 30%; text-align: center; font-size: 15px; float: right;"> Sales Every Customer
-            </p>
-            </h6>
+
+		    <div class="row">
+			<div class="col-sm-4"><p style="width: 70%; font-size: 15px; float: left;">Order Yesterday</p><br><p style="width: 70%; font-size: 15px; float: left;" id="name"></p></div>
+			<div class="col-sm-4"><p style="width: 70%; font-size: 15px; float: left;">Order Last 7 days</p><br><p style="width: 70%; font-size: 15px; float: left;">Value</p></div>
+			<div class="col-sm-4"><p style="width: 70%; font-size: 15px; float: left;">Order Last 30 days</p><br><p style="width: 70%; font-size: 15px; float: left;">Value</p></div>
+			</div>
+
+            <div class="dashboard-graph1" style="width: 70%; float: left;"></div>
+			<div class="dashboard-list" style="width: 30%; float: right;"></div>
+
+		     <p style="width: 70%; text-align: center; font-size: 15px; float: left;">Sales Every Day</p>
+		     <p style="width: 30%; text-align: center; font-size: 15px; float: right;"> Sales Every Customer</p>
+
+
 			<div class="dashboard-graph1" style="width: 70%; float: left;"></div>
 			<div class="dashboard-list" style="width: 30%; float: right;"></div>
-			 <h6><p style="width: 70%; text-align: center; font-size: 15px; float: left;">Sales in Every Delivery Date</p>
-		    <p style="width: 30%; text-align: center; font-size: 15px; float: right;"> Sales Every Day
-            </p>
+
+			<h6>
+			    <p style="width: 70%; text-align: center; font-size: 15px; float: left;">Sales in Every Delivery Date</p>
+		        <p style="width: 30%; text-align: center; font-size: 15px; float: right;">Sales Every Day</p>
             </h6>
+
 			<div class="dashboard-graph2" style="width: 70%; float: left;"></div>
 			<div class="dashboard-list1" style="width: 30%; float: right;"></div>
 			<div class="dashboard-graph3" style="width: 50%; float: left;"></div>
@@ -71,18 +83,18 @@ frappe.Dashboard = Class.extend({
 			this.get_sidebar_item(doctype).appendTo(this.$sidebar_list);
 		});
 
-		this.company_select = this.page.add_field({
-			fieldname: 'company',
-			label: __('Company'),
-			fieldtype:'Link',
-			options:'Company',
-			default:frappe.defaults.get_default('company'),
-			reqd: 1,
-			change: function() {
-				me.options.selected_company = this.value;
-				me.make_request($container);
-			}
-		});
+//		this.company_select = this.page.add_field({
+//			fieldname: 'company',
+//			label: __('Company'),
+//			fieldtype:'Link',
+//			options:'Company',
+//			default:frappe.defaults.get_default('company'),
+//			reqd: 1,
+//			change: function() {
+//				me.options.selected_company = this.value;
+//				me.make_request($container);
+//			}
+//		});
 		this.timespan_select = this.page.add_select(__("Timespan"),
 			this.timespans.map(d => {
 				return {"label": __(d), value: d }
@@ -157,7 +169,14 @@ frappe.Dashboard = Class.extend({
 				field: me.options.selected_filter_item,
 			},
 			callback: function (r) {
-				let results = r.message || [];
+			    var a = r.message[0].name;
+			    var b = r.message[0].value;
+
+			    document.getElementById("name").innerHTML = a + ":  " + b;
+
+
+			    let results = r.message || [];
+
 
 				let graph_items = results.slice(0, 10);
 

@@ -115,7 +115,7 @@ def get_all_salesorder(from_date, company, field):
 			FROM `tabSales Order`
 			where docstatus = 1 and transaction_date >= %s and company = %s
 			group by transaction_date
-			order by value DESC
+			order by transaction_date ASC
 			limit 20
 		""", (from_date, company), as_dict=1)
     else:
@@ -161,15 +161,24 @@ def get_all_salesorder_delivery(from_date, company, field):
 		""".format(select_field), (from_date, company), as_dict=1)
 
 def get_all_salesorder_customer(from_date, company, field):
+    print("===================================================================")
+    print("===================================================================")
+    print((datetime.datetime.now() - datetime.timedelta(1)).strftime('%Y-%m-%d'))
+    print((datetime.datetime.now() - datetime.timedelta(7)).strftime('%Y-%m-%d'))
+    print("===================================================================")
+    print("===================================================================")
+
+    yesterday = (datetime.datetime.now() - datetime.timedelta(1)).strftime('%Y-%m-%d')
+
     if field == "grand_total":
         return frappe.db.sql("""
-			select customer as name, sum(grand_total) as value
+			select %s as name, sum(grand_total) as value
 			FROM `tabSales Order`
-			where docstatus = 1 and transaction_date >= %s and company = %s
-			group by customer
+			where docstatus = 1 and status = "To Deliver and Bill" and transaction_date = %s and company = %s
+			group by transaction_date
 			order by value DESC
 			limit 20
-		""", (from_date, company), as_dict=1)
+		""", (yesterday, yesterday, company), as_dict=1)
     else:
         if field == "base_grand_total":
             select_field = "sum(so_item.base_net_amount)"
